@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 #----------------------------------------
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix # Added at day 94
 
 
 @st.cache_resource
@@ -19,7 +19,7 @@ def download_nltk_data():
 download_nltk_data()
 
 st.title("Enterprice AI Spam Classifier")
-st.subheader("Day 92: Feature Extraction & Data plitting")
+st.subheader("Day 94: Enterprise Model Evaluation")
 
 @st.cache_data
 def load_data():
@@ -38,47 +38,50 @@ def clean_text(text):
 try:
     data = load_data()
 
-    st.write("### Dataset Preview")
-    st.dataframe(data.head())
 
-    st.write("### Class Distribution (Spam vs. Safe)")
-    distribution = data["Label"].value_counts()
-    st.write(distribution)
+    with st.expander("View Day 91 & 92 Data Pipeline Steps"):
+        st.write("### Dataset Preview")
+        st.dataframe(data.head())
 
-    spam_pct = (distribution['spam'] / len(data)) * 100
-    st.info(f"The dataset contains {spam_pct:.2f}%Spam and {100 - spam_pct:.2f}% Safe messages.")
+        st.write("### Class Distribution")
+        distribution = data["Label"].value_counts()
+        st.write(distribution)
 
+        st.write("### Data Cleaning")
+        with st.spinner("Running text through NLP pipeline..."):
+            data["Cleaned_Message"] = data["Message"].apply(clean_text)
+        st.dataframe(data[['Message','Cleaned_Message']].head(5))
+        
 
-    st.write("### Data Cleaning (NLP in Action)")
-    with st.spinner("Running text through NLP cleaning pipeline..."):
-        data['Cleaned_Message'] = data['Message'].apply(clean_text)
+    Vectorizer =  TfidfVectorizer()
+    X = Vectorizer.fit_transform(data['Cleaned_Message'])
+    y = data['Label']
 
-    st.dataframe(data[['Message', 'Cleaned_Message']].head(10))
-
-    st.write("### Day 92: Converting Words to Math (TF-IDF)")
-
-    Vectorizer = TfidfVectorizer()
-
-    with st.spinner("Calculating TF-IDF Logarithms..."):
-        X = Vectorizer.fit_transform(data["Cleaned_Message"])
-        y = data['Label']
-
-
-    st.write("### Training & Testing Split")
     X_train , X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    st.success(f"Data Succssfully Split! 80% Training Data: {X_train.shape[0]} messages | 20% Testing Data: {X_test.shape[0]} messages. ")
-
-    st.write("### Day 93: Training the AI (Naive Bayes)")
+   
     model = MultinomialNB()
+    model.fit(X_train, y_train)
 
-    with st.spinner("Training the Naive Bayes model..."):  # spinner = loading animation...
-        model.fit(X_train, y_train)
 
-    predictions = model.predict(X_test)
-    accuracy =  accuracy_score(y_test, predictions)
+    st.write("### Day 94: AI Evaluation & Business Logic")
+    y_pred = model.predict(X_test)
 
-    st.success(f"Model Training Complete! Baseline Accuracy: {accuracy * 100:.2f}%")
+    acc = accuracy_score(y_test, y_pred)
+    st.metric(label="Model Accuracy", value=f"{acc * 100:.2f}%")
+    cm = confusion_matrix(y_test, y_pred)
 
+
+    st.write("#### The Confusion Matrix Breakdown")
+    st.write(f"- ✅ **True Safe(Ham):** '{cm[0][0]}' (Safe message correctly identified)")
+    st.write(f"- 🚨 **FALSE POSITIVE:** '{cm[0][1]}' (safe message WRONGLY flagged as spam. *This is dangerous!*)")
+    st.write(f"- ⚠ **FALSE NEGATIVE:** '{cm[1][0]}' (spam messages that slipped through into the inbox)")
+    st.write(f"- 🎯 **True Spam:** '{cm[1][1]}' (Spam messages correctly caught and blocked)")
+
+    st.write("###  Detailed Classification Report") 
+    st.code("classification_report(y_test, y_pred)")
+
+
+   
 except FileExistsError:
     st.error("Please place the 'spam.csv' file inside your projected folder to trigger the pipeline.")
