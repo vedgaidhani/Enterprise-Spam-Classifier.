@@ -81,6 +81,26 @@ try:
     st.write("###  Detailed Classification Report") 
     st.code("classification_report(y_test, y_pred)")
 
+#----------day 95...
+
+    st.divider()
+    st.write('## 🚀 Test the AI: Live Inference')
+
+    user_input = st.text_area("Enter your message here:", placeholder="e.g., Congratulation! You have won a $1,000 Walmart gift card. Click here to claim now.")
+
+    if st.button("Analyze Message"):
+        if user_input:
+            with st.spinner("AI is analyzing the message..."):
+                cleand_input = clean_text(user_input)
+                Vectorized_input = Vectorizer.transform([cleand_input])
+                prediction = model.predict(Vectorized_input)[0]
+
+                if prediction == "spam":
+                    st.error("🚨 **ALERT:** This message has been classified as **SPAM**.")
+                else:
+                    st.success("✅ **SAFE:** This message looks normal. ")
+        else:
+            Warning("Please enter a message to  analyze.")
 
    
 except FileExistsError:
