@@ -1,3 +1,4 @@
+import joblib 
 import streamlit as st
 import pandas as pd
 import string
@@ -18,8 +19,23 @@ def download_nltk_data():
 
 download_nltk_data()
 
-st.title("Enterprice AI Spam Classifier")
-st.subheader("Day 94: Enterprise Model Evaluation")
+st.set_page_config(page_title="ThreatDetect AI",page_icon="🛡", layout="wide")
+with st.sidebar:
+    st.image("https://img.icons8.com/color/96/000000/shield.png", width=80)
+    st.title("ThreatDetect AI")
+    st.caption("Enterprise NLP Spam Filter")
+    st.divider()
+    st.markdown("""
+    **Engine Specs**
+    - Algoritham: Multinomial Naive Bayes
+    - Vectorization: TF-IDK Logarithms
+    - Preprocessing: NLTK Stopwords
+    """)
+    st.info("Built by Vedant Gaidhani | AI Application Engineer")
+
+st.title("🛡 ThreatDetect AI: Live Message Analysis")
+st.markdown("Instantly classify text messages using Natural Language Processing.")
+st.divider()
 
 @st.cache_data
 def load_data():
@@ -58,10 +74,14 @@ try:
     y = data['Label']
 
     X_train , X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+    
    
     model = MultinomialNB()
     model.fit(X_train, y_train)
+
+    joblib.dump(model, 'spam_model.pkl')
+    joblib.dump(Vectorizer, 'tfidf_vectorizer.pkl')
+    st.toast("🧠 AI Brain saved to disk!")
 
 
     st.write("### Day 94: AI Evaluation & Business Logic")
@@ -84,24 +104,33 @@ try:
 #----------day 95...
 
     st.divider()
-    st.write('## 🚀 Test the AI: Live Inference')
+    st.write("### 🚀 Test the Engine")
 
-    user_input = st.text_area("Enter your message here:", placeholder="e.g., Congratulation! You have won a $1,000 Walmart gift card. Click here to claim now.")
+    col1, col2 = st.columns([2, 1])
 
-    if st.button("Analyze Message"):
-        if user_input:
-            with st.spinner("AI is analyzing the message..."):
-                cleand_input = clean_text(user_input)
-                Vectorized_input = Vectorizer.transform([cleand_input])
-                prediction = model.predict(Vectorized_input)[0]
+    with col1:
+        user_input = st.text_area("Input suspected text message:", height=150, placeholder="Paste message here...")
+        analyze_btn = st.button("Run Threat Analysis", type="primary", use_container_width=True)
 
-                if prediction == "spam":
-                    st.error("🚨 **ALERT:** This message has been classified as **SPAM**.")
-                else:
-                    st.success("✅ **SAFE:** This message looks normal. ")
-        else:
-            Warning("Please enter a message to  analyze.")
+    with col2:
+        st.write("#### Analysis Result")
+        if analyze_btn:
+            if user_input:
+
+                with st.spinner("Analyzing the NLP tokens.."):
+                    cleand_input = clean_text(user_input)
+                    Vectorized_input = Vectorizer.transform([cleand_input])
+                    prediction = model.predict(Vectorized_input)[0]
+
+                    if prediction == "spam":
+                        st.error("🚨 **ALERT: THREAT DETECTED** ")
+                        st.write("This matches known spam signatures.")
+                    else:
+                        st.success("✅ **SAFE:** ")
+                        st.write("No malicioous signatures detected.")
+            else:
+                st.warning("Awaiting inputs...")
 
    
-except FileExistsError:
+except FileNotFoundError:
     st.error("Please place the 'spam.csv' file inside your projected folder to trigger the pipeline.")
