@@ -79,7 +79,7 @@ try:
     st.write(f"- 🎯 **True Spam:** '{cm[1][1]}' (Spam messages correctly caught and blocked)")
 
     st.write("###  Detailed Classification Report") 
-    st.code("classification_report(y_test, y_pred)")
+    st.code(classification_report(y_test, y_pred))
 
 #----------day 95...
 
