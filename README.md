@@ -37,6 +37,6 @@ If you wish to run this engine on your own machine:
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/vedgaidhani/Enterprise-Spam-Classifier.](https://github.com/vedgaidhani/Enterprise-Spam-Classifier.)
+   git clone [https://github.com/vedgaidhani/Enterprise-Spam-Classifier.git](https://github.com/vedgaidhani/Enterprise-Spam-Classifier.git)
 
    
